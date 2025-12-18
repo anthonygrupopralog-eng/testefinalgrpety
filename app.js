@@ -1,12 +1,14 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getFirestore,
   collection,
+  onSnapshot,
+  addDoc,
   query,
-  where,
-  onSnapshot
+  where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyB61mrR6417ECkuUCsbBqLU3KQ_hepXiQs",
   authDomain: "check-list-d32b1.firebaseapp.com",
@@ -19,6 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* ================= REGRA DE STATUS ================= */
 function calcularStatus(dataChecklist) {
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
@@ -30,11 +33,34 @@ function calcularStatus(dataChecklist) {
     (hoje - data) / (1000 * 60 * 60 * 24)
   );
 
-  if (diffDias > 30) return 'vencido';
-  if (diffDias === 30) return 'pendente';
-  return 'em dia';
+  if (diffDias > 30) return { texto: 'Vencido', classe: 'danger' };
+  if (diffDias === 30) return { texto: 'Pendente', classe: 'warning' };
+  return { texto: 'Em dia', classe: 'ok' };
 }
 
+/* ================= SALVAR CHECKLIST (1 CLIQUE) ================= */
+async function salvarChecklist(placa) {
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+
+  try {
+    await addDoc(collection(db, 'checklists'), {
+      placa: placa,
+      dataChecklist: hoje.toISOString().slice(0,10),
+      criadoEm: hoje
+    });
+
+    alert(`Checklist da placa ${placa} salvo com sucesso!`);
+  } catch (error) {
+    alert('Erro ao salvar checklist');
+    console.error(error);
+  }
+}
+
+/* DEIXA A FUNÇÃO VISÍVEL PARA O BOTÃO */
+window.salvarChecklist = salvarChecklist;
+
+/* ================= CARREGAR PLACAS E STATUS ================= */
 const placasRef = collection(db, 'placas');
 const checklistsRef = collection(db, 'checklists');
 
@@ -42,15 +68,16 @@ onSnapshot(placasRef, (placasSnap) => {
   const tbody = document.querySelector('tbody');
   tbody.innerHTML = '';
 
-  let emDia = 0, pendente = 0, vencido = 0;
+  let emDia = 0;
+  let pendentes = 0;
+  let vencidos = 0;
 
-  placasSnap.forEach(async (placaDoc) => {
-    const placa = placaDoc.data().placa;
-    const tipo = placaDoc.data().tipo;
+  placasSnap.forEach((placaDoc) => {
+    const { placa, tipo } = placaDoc.data();
 
     const q = query(checklistsRef, where('placa', '==', placa));
-    onSnapshot(q, (checkSnap) => {
 
+    onSnapshot(q, (checkSnap) => {
       let ultimaData = null;
 
       checkSnap.forEach(doc => {
@@ -63,42 +90,33 @@ onSnapshot(placasRef, (placasSnap) => {
 
       if (ultimaData) {
         const status = calcularStatus(ultimaData);
+        statusTexto = status.texto;
+        statusClasse = status.classe;
 
-        if (status === 'em dia') {
-          statusTexto = 'Em dia';
-          statusClasse = 'ok';
-          emDia++;
-        }
-        if (status === 'pendente') {
-          statusTexto = 'Pendente';
-          statusClasse = 'warning';
-          pendente++;
-        }
-        if (status === 'vencido') {
-          statusTexto = 'Vencido';
-          statusClasse = 'danger';
-          vencido++;
-        }
+        if (statusTexto === 'Em dia') emDia++;
+        if (statusTexto === 'Pendente') pendentes++;
+        if (statusTexto === 'Vencido') vencidos++;
       }
 
-      tbody.innerHTML += `
-        <tr>
-          <td>${placa}</td>
-          <td>${tipo}</td>
-          <td>${ultimaData ? ultimaData.toLocaleDateString() : '-'}</td>
-          <td class="status ${statusClasse}">${statusTexto}</td>
-          <td>
-            <a href="checklist.html?placa=${placa}">
-              <button>Checklist</button>
-            </a>
-          </td>
-        </tr>
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${placa}</td>
+        <td>${tipo}</td>
+        <td>${ultimaData ? ultimaData.toLocaleDateString() : '-'}</td>
+        <td class="status ${statusClasse}">${statusTexto}</td>
+        <td>
+          <button onclick="salvarChecklist('${placa}')">
+            Checklist
+          </button>
+        </td>
       `;
+
+      tbody.appendChild(row);
 
       document.getElementById('totalVeiculos').innerText = placasSnap.size;
       document.getElementById('emDia').innerText = emDia;
-      document.getElementById('pendentes').innerText = pendente;
-      document.getElementById('vencidos').innerText = vencido;
+      document.getElementById('pendentes').innerText = pendentes;
+      document.getElementById('vencidos').innerText = vencidos;
     });
   });
 });
