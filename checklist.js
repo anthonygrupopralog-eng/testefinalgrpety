@@ -17,24 +17,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const urlParams = new URLSearchParams(window.location.search);
-const placa = urlParams.get('placa');
-
+const placa = new URLSearchParams(window.location.search).get('placa');
 document.getElementById('placaTitulo').innerText = `Placa: ${placa}`;
 
 document.getElementById('salvarChecklist').addEventListener('click', async () => {
-  const mesAtual = new Date().toISOString().slice(0, 7);
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
 
   await addDoc(collection(db, 'checklists'), {
     placa,
-    mes: mesAtual,
-    pneus: document.getElementById('pneus').checked,
-    freios: document.getElementById('freios').checked,
-    iluminacao: document.getElementById('iluminacao').checked,
-    observacoes: document.getElementById('obs').value,
-    criadoEm: new Date()
+    dataChecklist: hoje.toISOString().slice(0,10),
+    criadoEm: hoje
   });
 
   alert('Checklist salvo com sucesso!');
-  window.history.back();
+  window.location.href = 'index.html';
 });
