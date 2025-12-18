@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Checklist Mensal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="header">
+  <h1>Checklist Mensal</h1>
+  <p id="placaTitulo"></p>
+</header>
+
+<section class="table-container">
+  <label><input type="checkbox" id="pneus"> Pneus</label><br><br>
+  <label><input type="checkbox" id="freios"> Freios</label><br><br>
+  <label><input type="checkbox" id="iluminacao"> Iluminação</label><br><br>
+
+  <textarea id="obs" placeholder="Observações" style="width:100%; height:80px;"></textarea><br><br>
+
+  <button id="salvarChecklist">Salvar Checklist</button>
+</section>
+
+<script type="module" src="checklist.js"></script>
+</body>
+</html>
