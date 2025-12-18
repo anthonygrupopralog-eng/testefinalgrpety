@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checklist Mensal da Frota</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header">
+    <h1>Checklist Mensal da Frota</h1>
+    <p>Controle visual de checklists por placa</p>
+  </header>
+
+  <!-- DASHBOARD DINÂMICO -->
+  <section class="dashboard">
+    <div class="card total">
+      🚛 <span id="totalVeiculos">0</span>
+      <p>Veículos</p>
+    </div>
+    <div class="card ok">
+      ✅ <span id="emDia">0</span>
+      <p>Em dia</p>
+    </div>
+    <div class="card warning">
+      ⚠️ <span id="pendentes">0</span>
+      <p>Pendentes</p>
+    </div>
+    <div class="card danger">
+      ⛔ <span id="vencidos">0</span>
+      <p>Vencidos</p>
+    </div>
+  </section>
+
+  <!-- CADASTRO DE PLACAS -->
+  <section class="filters">
+    <input type="text" id="placaInput" placeholder="Placa (ABC1D23)" />
+    <select id="tipoInput">
+      <option value="">Tipo</option>
+      <option value="Carreta">Carreta</option>
+      <option value="Truck">Truck</option>
+      <option value="VUC">VUC</option>
+    </select>
+    <button id="btnCadastrar">Cadastrar placa</button>
+  </section>
+
+  <!-- TABELA -->
+  <section class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Placa</th>
+          <th>Tipo</th>
+          <th>Mês</th>
+          <th>Status</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
